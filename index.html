@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        #chatbox {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .user-message {
+            text-align: right;
+            color: #007bff;
+        }
+
+        .bot-message {
+            text-align: left;
+            color: #28a745;
+        }
+
+        #inputPregunta {
+            width: calc(100% - 90px);
+            padding: 10px;
+            margin-right: 10px;
+        }
+
+        #sendButton {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #sendButton:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Agente 007</h1>
+    
+    <div id="chatbox">
+        <!-- Aquí se mostrarán los mensajes -->
+    </div>
+
+    <div>
+        <input type="text" id="inputPregunta" placeholder="Escribe aquí tu pregunta">
+        <button id="sendButton" onclick="enviarPregunta()">Enviar</button>
+    </div>
+
+    <script>
+        // Detectar cuando se presiona "Enter" en el campo de entrada
+        document.getElementById("inputPregunta").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                enviarPregunta();  // Llama a la función de envío
+            }
+        });
+
+        // Función para enviar la pregunta al backend
+        function enviarPregunta() {
+            const pregunta = document.getElementById("inputPregunta").value;
+
+            if (!pregunta) {
+                alert("Por favor, escribe una pregunta.");
+                return;
+            }
+
+            // Mostrar la pregunta del usuario en el chat
+            mostrarMensajeEnChat(pregunta, "user-message");
+
+            // Limpiar el campo de entrada
+            document.getElementById("inputPregunta").value = '';
+
+            // Hacer la solicitud al backend
+            fetch('http://127.0.0.1:5000/chatbot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: pregunta })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Mostrar la respuesta del chatbot en el chat
+                mostrarMensajeEnChat(data.response, "bot-message");
+            })
+            .catch(error => {
+                console.error("Error al contactar el chatbot:", error);
+                mostrarMensajeEnChat("Error al contactar el chatbot.", "bot-message");
+            });
+        }
+
+        // Función para mostrar mensajes en el chatbox
+        function mostrarMensajeEnChat(mensaje, clase) {
+            const chatbox = document.getElementById("chatbox");
+
+            // Crear un nuevo párrafo para el mensaje
+            const nuevoMensaje = document.createElement("p");
+            nuevoMensaje.className = clase;
+            nuevoMensaje.textContent = mensaje;
+
+            // Agregar el nuevo mensaje al chatbox
+            chatbox.appendChild(nuevoMensaje);
+
+            // Desplazar el chatbox hacia abajo para que el último mensaje sea visible
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
